@@ -1,13 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { submitLead } from "@/app/actions/submitLead";
 
-type FormState = {
-  name: string;
-  phone: string;
-  email: string;
-};
-
+type FormState = { name: string; phone: string; email: string };
 type FieldError = Partial<FormState>;
 
 function validate(values: FormState): FieldError {
@@ -29,7 +25,9 @@ function validate(values: FormState): FieldError {
 export default function LeadForm() {
   const [values, setValues] = useState<FormState>({ name: "", phone: "", email: "" });
   const [errors, setErrors] = useState<FieldError>({});
+  const [serverError, setServerError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
@@ -46,7 +44,15 @@ export default function LeadForm() {
       setErrors(fieldErrors);
       return;
     }
-    setSubmitted(true);
+    setServerError(null);
+    startTransition(async () => {
+      const result = await submitLead(values);
+      if (result.error) {
+        setServerError(result.error);
+      } else {
+        setSubmitted(true);
+      }
+    });
   }
 
   if (submitted) {
@@ -83,6 +89,7 @@ export default function LeadForm() {
         value={values.name}
         error={errors.name}
         onChange={handleChange}
+        disabled={isPending}
       />
       <Field
         label="전화번호"
@@ -92,6 +99,7 @@ export default function LeadForm() {
         value={values.phone}
         error={errors.phone}
         onChange={handleChange}
+        disabled={isPending}
       />
       <Field
         label="이메일"
@@ -101,12 +109,17 @@ export default function LeadForm() {
         value={values.email}
         error={errors.email}
         onChange={handleChange}
+        disabled={isPending}
       />
+      {serverError && (
+        <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">{serverError}</p>
+      )}
       <button
         type="submit"
-        className="mt-2 h-12 w-full rounded-xl bg-blue-600 font-semibold text-white transition-colors hover:bg-blue-700 active:bg-blue-800"
+        disabled={isPending}
+        className="mt-2 h-12 w-full rounded-xl bg-blue-600 font-semibold text-white transition-colors hover:bg-blue-700 active:bg-blue-800 disabled:opacity-60 disabled:cursor-not-allowed"
       >
-        문의 남기기
+        {isPending ? "제출 중..." : "문의 남기기"}
       </button>
     </form>
   );
@@ -120,6 +133,7 @@ function Field({
   value,
   error,
   onChange,
+  disabled,
 }: {
   label: string;
   name: string;
@@ -128,6 +142,7 @@ function Field({
   value: string;
   error?: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  disabled?: boolean;
 }) {
   return (
     <div className="flex flex-col gap-1.5">
@@ -141,9 +156,10 @@ function Field({
         placeholder={placeholder}
         value={value}
         onChange={onChange}
+        disabled={disabled}
         className={[
           "h-11 rounded-xl border px-4 text-sm outline-none transition-colors",
-          "placeholder:text-zinc-400",
+          "placeholder:text-zinc-400 disabled:bg-zinc-50 disabled:opacity-60",
           "focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
           error
             ? "border-red-400 bg-red-50 focus:ring-red-400 focus:border-red-400"
