@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Lead } from "@/app/actions/getLeads";
 import { updateLead } from "@/app/actions/updateLead";
@@ -19,7 +19,7 @@ function formatDate(date: Date) {
 }
 
 function toDateString(date: Date) {
-  return new Date(date).toISOString().slice(0, 10);
+  return new Date(date).toLocaleDateString("sv"); // YYYY-MM-DD, 로컬 타임존
 }
 
 const inputClass =
@@ -185,8 +185,8 @@ export default function LeadsTable({ initialLeads }: { initialLeads: Lead[] }) {
                 const leadMemos = memosByLead[lead.id];
 
                 return (
-                  <>
-                    <tr key={lead.id} className="border-t border-zinc-100 hover:bg-zinc-50">
+                  <Fragment key={lead.id}>
+                    <tr className="border-t border-zinc-100 hover:bg-zinc-50">
                       <td className="px-4 py-3 text-sm text-zinc-700">
                         {isEditing ? (
                           <input
@@ -257,7 +257,7 @@ export default function LeadsTable({ initialLeads }: { initialLeads: Lead[] }) {
                       </td>
                     </tr>
                     {isExpanded && (
-                      <tr key={`memo-${lead.id}`}>
+                      <tr>
                         <td colSpan={5} className="bg-amber-50 px-6 py-4">
                           <div className="space-y-3">
                             <div className="flex gap-2">
@@ -304,7 +304,7 @@ export default function LeadsTable({ initialLeads }: { initialLeads: Lead[] }) {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </Fragment>
                 );
               })}
             </tbody>
