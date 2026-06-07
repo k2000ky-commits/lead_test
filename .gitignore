@@ -4,6 +4,7 @@ package-lock.json
 
 # Claude Code
 .claude/
+.sixth/
 .pnp
 .pnp.js
 
