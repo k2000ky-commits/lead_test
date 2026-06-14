@@ -1,4 +1,5 @@
 import LeadForm from "./components/LeadForm";
+import ErrorTrigger from "./components/ErrorTrigger";
 
 export default function Home() {
   return (
@@ -12,6 +13,9 @@ export default function Home() {
         </div>
         <div className="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-zinc-200">
           <LeadForm />
+        </div>
+        <div className="flex justify-center">
+          <ErrorTrigger />
         </div>
       </div>
     </div>
